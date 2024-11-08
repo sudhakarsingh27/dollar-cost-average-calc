@@ -141,6 +141,13 @@ Developed with Cursor IDE
 
 ### Specific to this project
 1. Refactoring
-   - Simple to refactor an html file into a js file for the scripting part and keep the rendering part in the html file.
-   - Also the AI was able to update the `main.py` file to account for the new scripting file added. 
+    - Simple to refactor an html file into a js file for the scripting part and keep the rendering part in the html file.
+    - Also the AI was able to update the `main.py` file to account for the new scripting file added.
 
+2. Adding documentation
+    - Although the documentation was added automatically, it also did some refactoring of the code and moved a function from within another function to outside and failed to populated the important sections of that function. This is a big issue. 
+      - Seems like there should also be a continuous testing of the code to make sure the current changes are caught.
+
+3. Adding tests
+    - The generated unit tests are good but if something is wrong with the corresponding API usage, you need to manually fix it. I had to use python pdb to figure out that with an invalid ticker symbol, the error was not being thrown and that's because the `yfinance` library still returns a dictionary even with an invalid ticker symbol.
+    - Writing tests to continuously check the API usage is very important. Found a calculation bug in the `main.py` file. But when asked to "double check" the calculation, the AI generated code corrected the bug.
