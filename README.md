@@ -131,3 +131,16 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 Developed with Cursor IDE
 </p>
 
+## Opinion about the cursor IDE AI features
++ Great for prototyping and quick development
++ Especially when multiple code languages and stacks are involved. 
++ Can edit and/or refactor multiple files based on a single prompt
+
+- Editing markdown files is a pain, the mark down code is fragmented and hard to simply "Apply" unlike other languages.
+- The generation in the chat can take a long time for a big change, there should be an option to toggle it and make the changes directly in the editor.
+
+### Specific to this project
+1. Refactoring
+   - Simple to refactor an html file into a js file for the scripting part and keep the rendering part in the html file.
+   - Also the AI was able to update the `main.py` file to account for the new scripting file added. 
+

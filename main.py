@@ -3,11 +3,15 @@ from datetime import datetime
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
 # Set up Jinja2Templates with the directory where your templates are stored
 templates = Jinja2Templates(directory="templates")
+
+# Add this after creating the FastAPI app
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
