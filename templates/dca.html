@@ -94,6 +94,14 @@
             width: 100%;
             overflow-y: auto;
         }
+
+        canvas {
+            max-width: 100%;
+            margin: 20px 0;
+            background-color: white;
+            border-radius: 8px;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
@@ -293,11 +301,136 @@
                                 <td>$${Number(data.results.monthly.profit_loss).toFixed(2)}</td>
                             </tr>
                         </table>
+                        
+                        <!-- Add canvas for the chart -->
+                        <div style="margin-top: 40px;">
+                            <canvas id="investmentChart"></canvas>
+                        </div>
                     </div>
                 `;
 
                 // Display the results
                 document.getElementById("result").innerHTML = resultsHTML;
+
+                // Create the chart
+                const ctx = document.getElementById('investmentChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Daily', 'Weekly', 'Monthly'],
+                        datasets: [
+                            {
+                                label: 'Total Invested',
+                                data: [
+                                    data.results.daily.total_invested,
+                                    data.results.weekly.total_invested,
+                                    data.results.monthly.total_invested
+                                ],
+                                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1,
+                                order: 2  // Draw invested amount bars first (back)
+                            },
+                            {
+                                label: 'Profit/Loss',
+                                data: [
+                                    data.results.daily.profit_loss,
+                                    data.results.weekly.profit_loss,
+                                    data.results.monthly.profit_loss
+                                ],
+                                backgroundColor: [
+                                    data.results.daily.profit_loss >= 0 ? 'rgba(75, 192, 192, 0.8)' : 'rgba(255, 99, 132, 0.8)',
+                                    data.results.weekly.profit_loss >= 0 ? 'rgba(75, 192, 192, 0.8)' : 'rgba(255, 99, 132, 0.8)',
+                                    data.results.monthly.profit_loss >= 0 ? 'rgba(75, 192, 192, 0.8)' : 'rgba(255, 99, 132, 0.8)'
+                                ],
+                                borderColor: [
+                                    data.results.daily.profit_loss >= 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)',
+                                    data.results.weekly.profit_loss >= 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)',
+                                    data.results.monthly.profit_loss >= 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'
+                                ],
+                                borderWidth: 1,
+                                order: 1  // Draw profit/loss bars last (front)
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            x: {
+                                stacked: false,
+                                title: {
+                                    display: true,
+                                    text: 'Investment Frequency'
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                stacked: false,
+                                title: {
+                                    display: true,
+                                    text: 'Amount ($)'
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.1)'
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                },
+                                beginAtZero: true,  // Ensure axis includes zero
+                                suggestedMin: function(context) {
+                                    // Find the minimum profit/loss value
+                                    const minProfitLoss = Math.min(
+                                        data.results.daily.profit_loss,
+                                        data.results.weekly.profit_loss,
+                                        data.results.monthly.profit_loss
+                                    );
+                                    // Add 10% padding below the minimum value if negative
+                                    return minProfitLoss < 0 ? minProfitLoss * 1.1 : 0;
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: `Investment Results for ${data.symbol}`,
+                                font: {
+                                    size: 16
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        const value = context.parsed.y;
+                                        const sign = value >= 0 ? '+' : '';  // Add plus sign for positive values
+                                        label += '$' + sign + value.toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        });
+                                        return label;
+                                    }
+                                }
+                            },
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        }
+                    }
+                });
+
                 console.log('Success:', data);
             })
             .catch((error) => {
