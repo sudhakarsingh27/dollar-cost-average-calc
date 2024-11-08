@@ -57,7 +57,55 @@ function displayResults(data) {
         <div style="margin-top: 30px;">
             <h3 style="text-align: center;">Investment Results for ${data.symbol}</h3>
             <table>
-                <!-- ... rest of your table HTML ... -->
+                <tr>
+                    <th>Investment Details</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Investment Amount (per period)</td>
+                    <td>$${data.amount.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td>Selected Frequency</td>
+                    <td>${data.frequency}</td>
+                </tr>
+                <tr>
+                    <td>Investment Period</td>
+                    <td>${data.start_date} to ${data.end_date}</td>
+                </tr>
+                <tr>
+                    <th colspan="2" style="text-align: center; background-color: #e9e9e9;">Daily Investment Strategy</th>
+                </tr>
+                <tr>
+                    <td>Total Amount Invested</td>
+                    <td>$${Number(data.results.daily.total_invested).toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td>Total Profit/Loss</td>
+                    <td>$${Number(data.results.daily.profit_loss).toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <th colspan="2" style="text-align: center; background-color: #e9e9e9;">Weekly Investment Strategy</th>
+                </tr>
+                <tr>
+                    <td>Total Amount Invested</td>
+                    <td>$${Number(data.results.weekly.total_invested).toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td>Total Profit/Loss</td>
+                    <td>$${Number(data.results.weekly.profit_loss).toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <th colspan="2" style="text-align: center; background-color: #e9e9e9;">Monthly Investment Strategy</th>
+                </tr>
+                <tr>
+                    <td>Total Amount Invested</td>
+                    <td>$${Number(data.results.monthly.total_invested).toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td>Total Profit/Loss</td>
+                    <td>$${Number(data.results.monthly.profit_loss).toFixed(2)}</td>
+                </tr>
             </table>
             <div style="margin-top: 40px;">
                 <canvas id="investmentChart"></canvas>
@@ -110,7 +158,53 @@ function createChart(data) {
             ]
         },
         options: {
-            // ... rest of your chart options ...
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                x: {
+                    stacked: false,
+                    title: {
+                        display: true,
+                        text: 'Investment Frequency'
+                    }
+                },
+                y: {
+                    stacked: false,
+                    title: {
+                        display: true,
+                        text: 'Amount ($)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Investment Results for ${data.symbol}`,
+                    font: {
+                        size: 16
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += '$' + context.parsed.y.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            });
+                            return label;
+                        }
+                    }
+                }
+            }
         }
     });
 }
@@ -118,6 +212,15 @@ function createChart(data) {
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
     initializeForm();
+
+    // Handle uppercase conversion for ticker input
+    document.getElementById('ticker').addEventListener('input', function(e) {
+        const input = e.target;
+        const value = input.value.toUpperCase();
+        if (value !== input.value) {
+            input.value = value;
+        }
+    });
 
     document.getElementById("dateForm").addEventListener("submit", function(event) {
         event.preventDefault();
@@ -129,13 +232,5 @@ document.addEventListener('DOMContentLoaded', function() {
         const endDate = document.getElementById("end-date").value;
 
         handleDateSubmission(ticker, amount, frequency, startDate, endDate);
-    });
-
-    document.getElementById('ticker').addEventListener('input', function(e) {
-        const input = e.target;
-        const value = input.value.toUpperCase();
-        if (value !== input.value) {
-            input.value = value;
-        }
     });
 }); 
