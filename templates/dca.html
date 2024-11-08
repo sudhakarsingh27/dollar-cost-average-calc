@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCA Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background-color: #f9f9f9;
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .calculate-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .calculate-button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .ticker-suggestions {
+            position: relative;
+        }
+        
+        datalist {
+            position: absolute;
+            max-height: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Dollar Cost Averaging Calculator</h2>
+
+        <form id="dateForm">
+            <div class="form-group ticker-suggestions">
+                <label for="ticker">Ticker Symbol:</label>
+                <input type="text" 
+                       id="ticker" 
+                       name="ticker" 
+                       required 
+                       placeholder="e.g. AAPL" 
+                       list="tickerList"
+                       autocomplete="off">
+                <datalist id="tickerList">
+                    <!-- Popular Tech Stocks -->
+                    <option value="AAPL" label="Apple Inc.">
+                    <option value="MSFT" label="Microsoft Corporation">
+                    <option value="GOOGL" label="Alphabet Inc. (Google)">
+                    <option value="AMZN" label="Amazon.com Inc.">
+                    <option value="META" label="Meta Platforms Inc.">
+                    <option value="NVDA" label="NVIDIA Corporation">
+                    <option value="TSLA" label="Tesla Inc.">
+                    
+                    <!-- Popular ETFs -->
+                    <option value="SPY" label="SPDR S&P 500 ETF">
+                    <option value="QQQ" label="Invesco QQQ Trust">
+                    <option value="VTI" label="Vanguard Total Stock Market ETF">
+                    <option value="VOO" label="Vanguard S&P 500 ETF">
+                    
+                    <!-- Popular Financial Stocks -->
+                    <option value="JPM" label="JPMorgan Chase & Co.">
+                    <option value="BAC" label="Bank of America Corp">
+                    <option value="WFC" label="Wells Fargo & Co">
+                    
+                    <!-- Popular Consumer Stocks -->
+                    <option value="KO" label="Coca-Cola Company">
+                    <option value="PEP" label="PepsiCo Inc.">
+                    <option value="WMT" label="Walmart Inc.">
+                    <option value="DIS" label="The Walt Disney Company">
+                    
+                    <!-- Popular Healthcare Stocks -->
+                    <option value="JNJ" label="Johnson & Johnson">
+                    <option value="PFE" label="Pfizer Inc.">
+                    <option value="UNH" label="UnitedHealth Group Inc.">
+                </datalist>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Amount to Invest ($):</label>
+                <input type="number" id="amount" name="amount" required min="0" step="0.01" placeholder="e.g. 1000">
+            </div>
+
+            <div class="form-group">
+                <label for="frequency">Investment Frequency:</label>
+                <select id="frequency" name="frequency" required>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="start-date">Start Date:</label>
+                <input type="date" id="start-date" name="start-date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="end-date">End Date:</label>
+                <input type="date" id="end-date" name="end-date" required>
+            </div>
+
+            <button type="submit" class="calculate-button">Calculate Returns</button>
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Set default values when the page loads
+        window.onload = function() {
+            // Set default ticker
+            document.getElementById("ticker").value = "AAPL";
+            
+            // Set default amount
+            document.getElementById("amount").value = "10";
+            
+            // Set default frequency
+            document.getElementById("frequency").value = "daily";
+            
+            // Set start date to first Monday of 2024 (January 1st, 2024)
+            document.getElementById("start-date").value = "2024-01-01";
+            
+            // Set end date to today
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById("end-date").value = `${year}-${month}-${day}`;
+        };
+
+        // JavaScript to handle form submission
+        document.getElementById("dateForm").addEventListener("submit", function(event) {
+            event.preventDefault();  // Prevent default form submission
+
+            // Get all form values
+            const ticker = document.getElementById("ticker").value;
+            const amount = document.getElementById("amount").value;
+            const frequency = document.getElementById("frequency").value;
+            const startDate = document.getElementById("start-date").value;
+            const endDate = document.getElementById("end-date").value;
+
+            // Call the function that handles the submission
+            handleDateSubmission(ticker, amount, frequency, startDate, endDate);
+        });
+
+        function handleDateSubmission(ticker, amount, frequency, startDate, endDate) {
+            // Display the selected values in the result section
+            document.getElementById("result").innerText = 
+                `Ticker: ${ticker}, Amount: $${amount}, Frequency: ${frequency}, Start Date: ${startDate}, End Date: ${endDate}`;
+
+            // Updated fetch request to include all parameters
+            fetch('/api/submit-dates', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    ticker: ticker,
+                    amount: parseFloat(amount),
+                    frequency: frequency,
+                    start_date: startDate, 
+                    end_date: endDate
+                }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Create results HTML with the new styling
+                let resultsHTML = `
+                    <div style="margin-top: 30px;">
+                        <h3 style="text-align: center;">Investment Results for ${data.symbol}</h3>
+                        <table>
+                            <tr>
+                                <th>Investment Details</th>
+                                <th>Value</th>
+                            </tr>
+                            <tr>
+                                <td>Investment Amount (per period)</td>
+                                <td>$${data.amount.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td>Selected Frequency</td>
+                                <td>${data.frequency}</td>
+                            </tr>
+                            <tr>
+                                <td>Investment Period</td>
+                                <td>${data.start_date} to ${data.end_date}</td>
+                            </tr>
+                            <tr>
+                                <th colspan="2" style="text-align: center; background-color: #e9e9e9;">Daily Investment Strategy</th>
+                            </tr>
+                            <tr>
+                                <td>Total Amount Invested</td>
+                                <td>$${Number(data.results.daily.total_invested).toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td>Total Profit/Loss</td>
+                                <td>$${Number(data.results.daily.profit_loss).toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <th colspan="2" style="text-align: center; background-color: #e9e9e9;">Weekly Investment Strategy</th>
+                            </tr>
+                            <tr>
+                                <td>Total Amount Invested</td>
+                                <td>$${Number(data.results.weekly.total_invested).toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td>Total Profit/Loss</td>
+                                <td>$${Number(data.results.weekly.profit_loss).toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <th colspan="2" style="text-align: center; background-color: #e9e9e9;">Monthly Investment Strategy</th>
+                            </tr>
+                            <tr>
+                                <td>Total Amount Invested</td>
+                                <td>$${Number(data.results.monthly.total_invested).toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td>Total Profit/Loss</td>
+                                <td>$${Number(data.results.monthly.profit_loss).toFixed(2)}</td>
+                            </tr>
+                        </table>
+                    </div>
+                `;
+
+                // Display the results
+                document.getElementById("result").innerHTML = resultsHTML;
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                document.getElementById("result").innerText = `Error: ${error.message}`;
+                console.error('Error:', error);
+            });
+        }
+
+        document.getElementById('ticker').addEventListener('input', function(e) {
+            const input = e.target;
+            const list = document.getElementById('tickerList');
+            const value = input.value.toUpperCase();
+
+            // Convert input to uppercase for consistency
+            if (value !== input.value) {
+                input.value = value;
+            }
+        });
+    </script>
+</body>
+</html> 
